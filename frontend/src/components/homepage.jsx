@@ -85,13 +85,18 @@ function timetableReducer(state, action) {
 const Homepage = () => {
   const [appState, dispatch] = useReducer(appReducer, initialState);
 
+  // API base URL - use your actual Render URL in production
+  const API_BASE_URL = process.env.NODE_ENV === 'production' 
+    ? 'https://exam-scheduler-backend.onrender.com' 
+    : 'http://localhost:8084';
+
   // Load exam folders from backend on component mount
   useEffect(() => {
     const fetchExamFolders = async () => {
       const auth = localStorage.getItem('auth');
       if (auth) {
         try {
-          const response = await fetch(`http://localhost:8084/api/exam-folders/user/${appState.currentUserId}`, {
+          const response = await fetch(`${API_BASE_URL}/api/exam-folders/user/${appState.currentUserId}`, {
             headers: {
               'Authorization': `Basic ${auth}`,
             },
@@ -148,7 +153,7 @@ const Homepage = () => {
     const auth = localStorage.getItem('auth');
     if (auth) {
       try {
-        const response = await fetch(`http://localhost:8084/api/exam-folders/user/${appState.currentUserId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/exam-folders/user/${appState.currentUserId}`, {
           headers: {
             'Authorization': `Basic ${auth}`,
           },
@@ -200,7 +205,7 @@ const Homepage = () => {
           folderId = existingFolder.id;
         } else {
           // Create new folder
-          const folderResponse = await fetch('http://localhost:8084/api/exam-folders', {
+          const folderResponse = await fetch(`${API_BASE_URL}/api/exam-folders`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -225,7 +230,7 @@ const Homepage = () => {
         
         if (folderId) {
           // Add timetable to folder
-          const response = await fetch(`http://localhost:8084/api/exam-folders/${folderId}/timetables`, {
+          const response = await fetch(`${API_BASE_URL}/api/exam-folders/${folderId}/timetables`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -237,21 +242,6 @@ const Homepage = () => {
           if (response.ok) {
             const updatedFolder = await response.json();
             dispatch({ type: 'UPDATE_EXAM_FOLDER', payload: updatedFolder });
-            // Also save to localStorage as backup (dedupe by id)
-            const storedFolders = JSON.parse(localStorage.getItem('examFolders') || '[]');
-            const folderIndex = storedFolders.findIndex(f => f && f.id === updatedFolder.id);
-            if (folderIndex >= 0) {
-              storedFolders[folderIndex] = updatedFolder;
-            } else {
-              // Replace any existing with same folderName
-              const nameIndex = storedFolders.findIndex(f => f && f.folderName && updatedFolder.folderName && f.folderName.toLowerCase() === updatedFolder.folderName.toLowerCase());
-              if (nameIndex >= 0) {
-                storedFolders[nameIndex] = updatedFolder;
-              } else {
-                storedFolders.push(updatedFolder);
-              }
-            }
-            localStorage.setItem('examFolders', JSON.stringify(storedFolders));
             return { success: true, message: 'Timetable stored successfully to database!' };
           } else {
             throw new Error(`Failed to add timetable to folder: ${response.status} ${response.statusText}`);
@@ -316,7 +306,7 @@ const Homepage = () => {
     
     if (auth && folder && updatedTimetableData.id) {
       try {
-        const response = await fetch(`http://localhost:8084/api/exam-folders/${folder.id}/timetables/${updatedTimetableData.id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/exam-folders/${folder.id}/timetables/${updatedTimetableData.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -396,7 +386,7 @@ const Homepage = () => {
       const auth = localStorage.getItem('auth');
       if (auth) {
         try {
-          const response = await fetch(`http://localhost:8084/api/exam-folders/${folder.id}/timetables/${timetableId}`, {
+          const response = await fetch(`${API_BASE_URL}/api/exam-folders/${folder.id}/timetables/${timetableId}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Basic ${auth}`,
@@ -408,7 +398,7 @@ const Homepage = () => {
             
             // If folder has no more timetables, delete the folder
             if (updatedFolder.timetables.length === 0) {
-              await fetch(`http://localhost:8084/api/exam-folders/${folder.id}`, {
+              await fetch(`${API_BASE_URL}/api/exam-folders/${folder.id}`, {
                 method: 'DELETE',
                 headers: {
                   'Authorization': `Basic ${auth}`,

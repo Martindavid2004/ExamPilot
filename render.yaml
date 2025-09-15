@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: exam-scheduler-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8084
+      - key: MONGODB_URI
+        fromDatabase:
+          name: exam-scheduler-db
+          property: connectionString
+      - key: CORS_ORIGIN
+        value: https://exam-pilot.vercel.app
+    healthCheckPath: /health
+
+databases:
+  - name: exam-scheduler-db
+    databaseName: exam_scheduler
+    user: admin
