@@ -1,0 +1,14 @@
+node_modules
+.env
+.env.local
+.env.production.local
+.env.development.local
+*.log
+.DS_Store
+.git
+.gitignore
+README.md
+backend/
+*.md
+.vscode/
+.idea/
