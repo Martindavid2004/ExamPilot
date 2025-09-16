@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/exam-folders")
+@RequestMapping("/api/exam-folders")
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:3000"})
 public class ExamFolderController {
 
@@ -87,6 +87,18 @@ public class ExamFolderController {
             return ResponseEntity.ok(updatedFolder);
         } else {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/create-with-timetable")
+    public ResponseEntity<ExamFolder> createFolderWithTimetable(
+            @RequestParam String userId,
+            @RequestBody Timetable timetable) {
+        ExamFolder newFolder = examFolderService.createFolderForTimetable(userId, timetable);
+        if (newFolder != null) {
+            return ResponseEntity.ok(newFolder);
+        } else {
+            return ResponseEntity.badRequest().build();
         }
     }
 }
